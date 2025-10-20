@@ -1,6 +1,6 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import METRICS from "@/lib/metrics";
+import { METRICS } from "@/lib/metrics";
 
 type HorizontalBarProps = {
   value: number;

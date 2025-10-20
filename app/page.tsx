@@ -5,7 +5,7 @@ import { Gauge } from "@/components/gauge";
 import { HorizontalBar } from "@/components/horizontal-bar";
 import { ThermometerSnowflake, Fuel, BatteryCharging } from "lucide-react";
 import { TbRoad } from "react-icons/tb";
-import METRICS from "@/lib/metrics";
+import { METRICS } from "@/lib/metrics";
 import useOBDData from "@/hooks/use-obd-data";
 
 export default function Home() {

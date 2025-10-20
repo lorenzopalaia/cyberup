@@ -11,8 +11,6 @@ import {
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
-export const description = "A radial chart with text";
-
 type GaugeProps = {
   value?: number;
   min?: number;
