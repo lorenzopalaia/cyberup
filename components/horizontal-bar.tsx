@@ -70,7 +70,7 @@ export function HorizontalBar({
       <div className="[&_[data-slot=progress-indicator]]:bg-[var(--hb-indicator)]">
         <Progress value={normalizedValue} />
       </div>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <span className="text-xs">
           {min}
           {unit}

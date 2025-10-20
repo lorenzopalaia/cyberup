@@ -119,7 +119,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    font-family:
+      var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
       "Roboto Mono", "Segoe UI Mono", "Helvetica Neue", monospace;
   }
 }

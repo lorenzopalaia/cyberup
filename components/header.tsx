@@ -9,11 +9,11 @@ export default function Header() {
   const currentDatetime = useCurrentDatetime();
 
   return (
-    <header className="flex justify-between items-center p-4">
+    <header className="flex items-center justify-between p-4">
       <h1 className="text-xl font-bold">CyberUp!</h1>
       <div className="flex items-center gap-4">
         <span className="text-sm font-bold">{obdData.temperature}°C</span>
-        <span className="text-sm text-muted-foreground">{currentDatetime}</span>
+        <span className="text-muted-foreground text-sm">{currentDatetime}</span>
         <SpeedLimit size={24} speed={50} />
       </div>
     </header>

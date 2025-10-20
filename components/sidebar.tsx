@@ -4,17 +4,17 @@ import { Home, Navigation } from "lucide-react";
 
 export default function Sidebar() {
   return (
-    <Card className="flex flex-col gap-4 p-4 h-screen">
+    <Card className="flex h-screen flex-col gap-4 p-4">
       <Button
         aria-label="Home"
-        className="w-12 h-12 p-0 mx-auto flex items-center justify-center"
+        className="mx-auto flex h-12 w-12 items-center justify-center p-0"
       >
         <Home size={20} />
       </Button>
 
       <Button
         aria-label="Navigazione"
-        className="w-12 h-12 p-0 mx-auto flex items-center justify-center"
+        className="mx-auto flex h-12 w-12 items-center justify-center p-0"
       >
         <Navigation size={20} />
       </Button>

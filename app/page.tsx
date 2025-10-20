@@ -23,7 +23,7 @@ export default function Home() {
           Icon={ThermometerSnowflake}
         />
       </div>
-      <div className="flex justify-center items-center gap-8">
+      <div className="flex items-center justify-center gap-8">
         <div className="w-96">
           <Gauge
             value={obdData.rpm}
@@ -34,7 +34,7 @@ export default function Home() {
           />
         </div>
         <Image
-          className="w-44 h-auto"
+          className="h-auto w-44"
           src="/car.webp"
           alt="Car Image"
           width={390}
@@ -50,7 +50,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="flex justify-between items-center px-16">
+      <div className="flex items-center justify-between px-16">
         <HorizontalBar
           value={obdData.fuelLevel}
           metric="fuelLevel"

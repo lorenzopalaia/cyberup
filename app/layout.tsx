@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistMono.variable} antialiased dark overflow-hidden`}
+        className={`${geistMono.variable} dark overflow-hidden antialiased`}
       >
         <Header />
         <div className="flex gap-4 p-4">
