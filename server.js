@@ -39,7 +39,7 @@ app.prepare().then(() => {
       } catch (err) {
         console.error("Failed to send ws message:", err);
       }
-    }, 100);
+    }, 50);
 
     ws.on("close", () => {
       console.log("Client disconnected");

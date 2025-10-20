@@ -18,7 +18,7 @@ type GaugeProps = {
   min?: number;
   max?: number;
   label?: string;
-  metric?: string;
+  metric?: keyof typeof METRICS;
   startDeg?: number;
   clockwise?: boolean;
 };
