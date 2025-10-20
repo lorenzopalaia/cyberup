@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Gauge } from "@/components/gauge";
 
 interface OBDData {
   speed: number;
@@ -46,13 +47,40 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      <h1>Mock OBD Dashboard</h1>
-      <p>Speed: {data.speed} km/h</p>
-      <p>RPM: {data.rpm}</p>
-      <p>Fuel Level: {data.fuelLevel} %</p>
-      <p>Engine Temperature: {data.engineTemp} °C</p>
-      <p>Battery Voltage: {data.battery.toFixed(1)} V</p>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Mock OBD Dashboard</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Speed */}
+        <div className="bg-card p-4 rounded-lg">
+          <Gauge value={data.speed} min={0} max={180} label="Speed" />
+        </div>
+
+        {/* RPM */}
+        <div className="bg-card p-4 rounded-lg">
+          <Gauge value={data.rpm} min={0} max={6500} label="RPM" />
+        </div>
+
+        {/* Fuel Level */}
+        <div className="bg-card p-4 rounded-lg">
+          <Gauge value={data.fuelLevel} min={0} max={100} label="Fuel" />
+        </div>
+
+        {/* Engine Temp */}
+        <div className="bg-card p-4 rounded-lg">
+          <Gauge
+            value={data.engineTemp}
+            min={70}
+            max={105}
+            label="Engine Temp."
+          />
+        </div>
+
+        {/* Battery */}
+        <div className="bg-card p-4 rounded-lg">
+          <Gauge value={data.battery} min={11.8} max={14.6} label="Battery" />
+        </div>
+      </div>
     </div>
   );
 }
