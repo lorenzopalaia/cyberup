@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Gauge } from "@/components/gauge";
+import { METRICS } from "@/lib/metrics";
 
 interface OBDData {
   speed: number;
@@ -21,7 +22,6 @@ export default function Home() {
   });
 
   useEffect(() => {
-    // connect to the dedicated websocket path on the server
     const ws = new WebSocket("ws://localhost:3000/ws");
 
     ws.onopen = () => {
@@ -53,32 +53,57 @@ export default function Home() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Speed */}
         <div className="bg-card p-4 rounded-lg">
-          <Gauge value={data.speed} min={0} max={180} label="Speed" />
+          <Gauge
+            value={data.speed}
+            min={METRICS.speed.min}
+            max={METRICS.speed.max}
+            label={METRICS.speed.label}
+            metric="speed"
+          />
         </div>
 
         {/* RPM */}
         <div className="bg-card p-4 rounded-lg">
-          <Gauge value={data.rpm} min={0} max={6500} label="RPM" />
+          <Gauge
+            value={data.rpm}
+            min={METRICS.rpm.min}
+            max={METRICS.rpm.max}
+            label={METRICS.rpm.label}
+            metric="rpm"
+          />
         </div>
 
         {/* Fuel Level */}
         <div className="bg-card p-4 rounded-lg">
-          <Gauge value={data.fuelLevel} min={0} max={100} label="Fuel" />
+          <Gauge
+            value={data.fuelLevel}
+            min={METRICS.fuelLevel.min}
+            max={METRICS.fuelLevel.max}
+            label={METRICS.fuelLevel.label}
+            metric="fuelLevel"
+          />
         </div>
 
         {/* Engine Temp */}
         <div className="bg-card p-4 rounded-lg">
           <Gauge
             value={data.engineTemp}
-            min={70}
-            max={105}
-            label="Engine Temp."
+            min={METRICS.engineTemp.min}
+            max={METRICS.engineTemp.max}
+            label={METRICS.engineTemp.label}
+            metric="engineTemp"
           />
         </div>
 
         {/* Battery */}
         <div className="bg-card p-4 rounded-lg">
-          <Gauge value={data.battery} min={11.8} max={14.6} label="Battery" />
+          <Gauge
+            value={data.battery}
+            min={METRICS.battery.min}
+            max={METRICS.battery.max}
+            label={METRICS.battery.label}
+            metric="battery"
+          />
         </div>
       </div>
     </div>

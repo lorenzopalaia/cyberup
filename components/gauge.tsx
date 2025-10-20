@@ -18,43 +18,80 @@ type GaugeProps = {
   min?: number;
   max?: number;
   label?: string;
+  metric?: string;
   startDeg?: number;
   clockwise?: boolean;
 };
+
+import { METRICS } from "@/lib/metrics";
 
 export function Gauge({
   value = 0,
   min = 0,
   max = 360,
   label = "Gauge",
+  metric,
   startDeg = 90,
   clockwise = true,
 }: GaugeProps) {
-  // angoli del grafico: startDeg è il grado da cui parte l'arco;
-  // se `clockwise` è true l'arco scorre in senso orario (end < start),
-  // altrimenti in senso antiorario (end > start).
   const startAngle = startDeg;
   const endAngle = clockwise ? startDeg - 360 : startDeg + 360;
   const angleRange = Math.abs(endAngle - startAngle);
 
-  // clamp e mappatura [min, max] -> [0, angleRange]
   const clamped = Math.min(Math.max(value, min), max);
   const proportion = max === min ? 0 : (clamped - min) / (max - min);
   const mappedAngle = proportion * angleRange;
 
-  // colore in base alla percentuale rispetto al massimo
-  const pct = proportion; // 0..1
-  let arcColor = "#10B981"; // green (default)
-  if (pct >= 0.9) {
-    arcColor = "#EF4444"; // red
-  } else if (pct >= 0.7) {
-    arcColor = "#F59E0B"; // yellow
+  const pct = proportion;
+
+  let arcColor = "#10B981";
+
+  if (
+    metric &&
+    METRICS[metric] &&
+    typeof METRICS[metric].colorFor === "function"
+  ) {
+    try {
+      arcColor = METRICS[metric].colorFor(clamped);
+    } catch {
+      console.warn("METRICS colorFor failed for", metric);
+    }
+  } else {
+    const normalizedLabel = String(label).toLowerCase();
+
+    if (normalizedLabel.includes("fuel")) {
+      if (pct <= 0.1) {
+        arcColor = "#EF4444";
+      } else if (pct <= 0.3) {
+        arcColor = "#F59E0B";
+      } else {
+        arcColor = "#10B981";
+      }
+    } else if (normalizedLabel.includes("battery")) {
+      const volts = clamped;
+      if (volts < 12.0 || volts > 13.5) {
+        arcColor = "#EF4444";
+      } else if (
+        (volts >= 12.0 && volts < 12.3) ||
+        (volts > 13.0 && volts <= 13.5)
+      ) {
+        arcColor = "#F59E0B";
+      } else {
+        arcColor = "#10B981";
+      }
+    } else {
+      if (pct >= 0.9) {
+        arcColor = "#EF4444";
+      } else if (pct >= 0.7) {
+        arcColor = "#F59E0B";
+      }
+    }
   }
 
   const chartData = [
     {
       browser: "safari",
-      // il valore passato al grafico rappresenta l'angolo mappato
+
       visitors: mappedAngle,
       fill: arcColor,
     },

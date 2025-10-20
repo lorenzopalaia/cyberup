@@ -1,26 +1,18 @@
 const { createServer } = require("http");
 const next = require("next");
 const WebSocket = require("ws");
+const { METRICS } = require("./lib/metrics");
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-let state = {
-  speed: 0,
-  rpm: 800,
-  engineTemp: 90,
-  fuelLevel: 100,
-  battery: 12.6,
-};
-
-const ranges = {
-  speed: { min: 0, max: 180, step: 1 },
-  rpm: { min: 0, max: 6500, step: 100 },
-  engineTemp: { min: 70, max: 105, step: 0.5 },
-  fuelLevel: { min: 0, max: 100, step: 1 },
-  battery: { min: 11.8, max: 14.6, step: 0.01 },
-};
+const state = {};
+const ranges = {};
+Object.values(METRICS).forEach((m) => {
+  state[m.key] = m.initial;
+  ranges[m.key] = { min: m.min, max: m.max, step: m.step };
+});
 
 function incrementLoop(param) {
   state[param] += ranges[param].step;
