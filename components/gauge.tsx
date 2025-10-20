@@ -158,6 +158,62 @@ export function Gauge({
                     >
                       {label}
                     </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) - 104}
+                      className="fill-muted-foreground"
+                    >
+                      {min}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) + 78}
+                      y={(viewBox.cy || 0) - 78}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.125)}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) + 104}
+                      y={viewBox.cy}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.25)}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) + 78}
+                      y={(viewBox.cy || 0) + 78}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.375)}
+                    </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) + 104}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.5)}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) - 78}
+                      y={(viewBox.cy || 0) + 78}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.625)}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) - 104}
+                      y={viewBox.cy}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.75)}
+                    </tspan>
+                    <tspan
+                      x={(viewBox.cx || 0) - 78}
+                      y={(viewBox.cy || 0) - 78}
+                      className="fill-muted-foreground"
+                    >
+                      {Math.round(max * 0.875)}
+                    </tspan>
                   </text>
                 );
               }

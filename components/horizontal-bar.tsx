@@ -61,6 +61,12 @@ export function HorizontalBar({
 
   return (
     <div className="w-48 space-y-2" style={wrapperStyle}>
+      <div className="flex justify-center">
+        <span className="text-sm">
+          {value}
+          {unit}
+        </span>
+      </div>
       <div className="[&_[data-slot=progress-indicator]]:bg-[var(--hb-indicator)]">
         <Progress value={normalizedValue} />
       </div>

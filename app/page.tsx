@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Gauge } from "@/components/gauge";
 import { HorizontalBar } from "@/components/horizontal-bar";
 import { ThermometerSnowflake, Fuel, BatteryCharging } from "lucide-react";
+import { TbRoad } from "react-icons/tb";
 import METRICS from "@/lib/metrics";
 import useOBDData from "@/hooks/use-obd-data";
 
@@ -33,7 +34,7 @@ export default function Home() {
           />
         </div>
         <Image
-          className="w-48 h-auto"
+          className="w-44 h-auto"
           src="/car.webp"
           alt="Car Image"
           width={390}
@@ -58,8 +59,12 @@ export default function Home() {
           unit="%"
           Icon={Fuel}
         />
+        <div className="flex items-center gap-2">
+          <TbRoad size={24} />
+          <span className="text-2xl font-medium">{obdData.odometer}KM</span>
+        </div>
         <HorizontalBar
-          value={obdData.batteryVoltage}
+          value={Number(obdData.batteryVoltage.toFixed(1))}
           metric="batteryVoltage"
           min={METRICS.batteryVoltage.min}
           max={METRICS.batteryVoltage.max}

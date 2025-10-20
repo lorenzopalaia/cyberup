@@ -6,6 +6,8 @@ interface OBDData {
   fuelLevel: number;
   engineTemp: number;
   batteryVoltage: number;
+  temperature: number;
+  odometer: number;
 }
 
 export default function useOBDData() {
@@ -15,6 +17,8 @@ export default function useOBDData() {
     fuelLevel: 0,
     engineTemp: 0,
     batteryVoltage: 0,
+    temperature: 0,
+    odometer: 0,
   });
 
   useEffect(() => {
