@@ -67,7 +67,7 @@ export function Gauge({
       } else {
         arcColor = "#10B981";
       }
-    } else if (normalizedLabel.includes("battery")) {
+    } else if (normalizedLabel.includes("batteryVoltage")) {
       const volts = clamped;
       if (volts < 12.0 || volts > 13.5) {
         arcColor = "#EF4444";
