@@ -76,7 +76,7 @@ export default function Home() {
               <div className="space-y-2">
                 <div className="flex items-baseline gap-2">
                   <div className="text-3xl font-bold">
-                    {Number(obdData.batteryVoltage.toFixed())}
+                    {Number(obdData.batteryVoltage.toFixed(1))}
                   </div>
                   <div className="text-muted-foreground">V</div>
                 </div>

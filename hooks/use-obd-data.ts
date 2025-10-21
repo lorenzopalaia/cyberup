@@ -22,13 +22,13 @@ export default function useOBDData(): OBDData & {
 } {
   const [data, setData] = useState<OBDData>({
     speed: 0,
-    rpm: 0,
-    fuelLevel: 0,
-    engineTemp: 0,
-    batteryVoltage: 0,
-    temperature: 0,
+    rpm: 800,
+    fuelLevel: 100,
+    engineTemp: 90,
+    batteryVoltage: 12.6,
+    temperature: 20,
     odometer: 0,
-    fuelConsumption: 0,
+    fuelConsumption: 18,
     throttlePosition: 0,
     residualKms: 0,
   });
