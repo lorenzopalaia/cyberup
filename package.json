@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "node server.js",
     "prebuild": "npm run format && npm run knip",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "lint": "eslint",
     "knip": "knip",
     "format": "prettier --write .",
-    "update": "npm-check-updates -u && npm install"
+    "update": "npm-check-updates -u && npm install",
+    "reinstall": "rm -rf .next node_modules package-lock.json && npm install"
   },
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.7",
@@ -30,7 +31,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.15",
-    "@types/node": "^24.9.0",
+    "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "eslint": "^9.38.0",

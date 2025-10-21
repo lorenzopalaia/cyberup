@@ -8,6 +8,9 @@ interface OBDData {
   batteryVoltage: number;
   temperature: number;
   odometer: number;
+  fuelConsumption: number;
+  throttlePosition: number;
+  residualKms: number;
 }
 
 export default function useOBDData() {
@@ -19,6 +22,9 @@ export default function useOBDData() {
     batteryVoltage: 0,
     temperature: 0,
     odometer: 0,
+    fuelConsumption: 0,
+    throttlePosition: 0,
+    residualKms: 0,
   });
 
   useEffect(() => {
@@ -30,6 +36,11 @@ export default function useOBDData() {
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
+
+      // Computed values
+      const residualKms = Math.round(735 * (message.fuelLevel / 100));
+      message.residualKms = residualKms;
+
       setData(message);
     };
 

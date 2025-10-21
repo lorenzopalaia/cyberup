@@ -4,9 +4,11 @@ import { METRICS } from "@/lib/metrics";
 
 type HorizontalBarProps = {
   value: number;
+  additionalValue?: number;
   min: number;
   max: number;
   unit: string;
+  additionalUnit?: string;
   Icon?: React.ElementType;
   iconClassName?: string;
 
@@ -15,9 +17,11 @@ type HorizontalBarProps = {
 
 export function HorizontalBar({
   value,
+  additionalValue,
   min,
   max,
   unit,
+  additionalUnit,
   Icon,
   iconClassName = "w-4 h-4",
   metric,
@@ -61,10 +65,14 @@ export function HorizontalBar({
 
   return (
     <div className="w-48 space-y-2" style={wrapperStyle}>
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-4">
         <span className="text-sm">
           {value}
           {unit}
+        </span>
+        <span className="text-muted-foreground text-sm">
+          {additionalValue}
+          {additionalUnit}
         </span>
       </div>
       <div className="[&_[data-slot=progress-indicator]]:bg-[var(--hb-indicator)]">
