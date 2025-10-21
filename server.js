@@ -2,6 +2,7 @@ const { createServer } = require("http");
 const next = require("next");
 const WebSocket = require("ws");
 const { METRICS } = require("./lib/metrics");
+const { WS_INTERVAL } = require("./lib/ws-config");
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
@@ -31,8 +32,6 @@ app.prepare().then(() => {
   wss.on("connection", (ws) => {
     console.log("Client connected");
 
-    const WS_INTERVAL_MS = dev ? 500 : 10;
-
     const sendDataInterval = setInterval(() => {
       Object.keys(state).forEach((param) => incrementLoop(param));
 
@@ -41,7 +40,7 @@ app.prepare().then(() => {
       } catch (err) {
         console.error("Failed to send ws message:", err);
       }
-    }, WS_INTERVAL_MS);
+    }, WS_INTERVAL);
 
     ws.on("close", () => {
       console.log("Client disconnected");
