@@ -18,6 +18,7 @@ interface OBDData {
 export default function useOBDData(): OBDData & {
   temperatureHistory: number[];
   fuelConsumptionHistory: number[];
+  batteryVoltageHistory: number[];
 } {
   const [data, setData] = useState<OBDData>({
     speed: 0,
@@ -39,6 +40,9 @@ export default function useOBDData(): OBDData & {
   const [fuelConsumptionHistory, setFuelConsumptionHistory] = useState<
     number[]
   >([data.fuelConsumption]);
+  const [batteryVoltageHistory, setBatteryVoltageHistory] = useState<number[]>([
+    data.batteryVoltage,
+  ]);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:3000/ws");
@@ -83,6 +87,14 @@ export default function useOBDData(): OBDData & {
           next.splice(0, next.length - DATA_POINTS);
         return next;
       });
+
+      // Push into battery voltage history, keep length <= DATA_POINTS
+      setBatteryVoltageHistory((prev) => {
+        const next = prev.concat(incoming.batteryVoltage);
+        if (next.length > DATA_POINTS)
+          next.splice(0, next.length - DATA_POINTS);
+        return next;
+      });
     };
 
     ws.onerror = (error) => {
@@ -102,5 +114,6 @@ export default function useOBDData(): OBDData & {
     ...data,
     temperatureHistory,
     fuelConsumptionHistory,
+    batteryVoltageHistory,
   };
 }

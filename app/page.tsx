@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AreaChart } from "@/components/area-chart";
-import { Thermometer, Fuel } from "lucide-react";
+import { Thermometer, Fuel, BatteryCharging } from "lucide-react";
 import useObdData from "@/hooks/use-obd-data";
 
 export default function Home() {
@@ -57,6 +57,30 @@ export default function Home() {
                   <div className="text-muted-foreground">KM/L</div>
                 </div>
                 <AreaChart chartData={obdData.fuelConsumptionHistory} />
+              </div>
+            ) : (
+              "Loading..."
+            )}
+          </CardContent>
+        </Card>
+        {/* Battery Voltage Card */}
+        <Card className="w-1/3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BatteryCharging />
+              Voltaggio Batteria
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {obdData ? (
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <div className="text-3xl font-bold">
+                    {Number(obdData.batteryVoltage.toFixed())}
+                  </div>
+                  <div className="text-muted-foreground">V</div>
+                </div>
+                <AreaChart chartData={obdData.batteryVoltageHistory} />
               </div>
             ) : (
               "Loading..."
