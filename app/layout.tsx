@@ -26,7 +26,7 @@ export default function RootLayout({
         className={`${geistMono.variable} dark overflow-hidden antialiased`}
       >
         <Header />
-        <div className="flex gap-4 p-4">
+        <div className="flex h-[calc(100vh-4rem)] gap-4 p-4">
           <Sidebar />
           {children}
         </div>

@@ -39,7 +39,7 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <Card className="flex h-screen flex-col gap-4 p-4">
+    <Card className="flex h-full flex-col justify-between p-4">
       {navItems.map(({ href, label, Icon, color }) => (
         <Link key={href} href={href}>
           <Button
