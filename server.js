@@ -1,6 +1,6 @@
 const { createServer } = require("http");
 const WebSocket = require("ws");
-const { METRICS } = require("./lib/metrics");
+const { DATA } = require("./lib/data");
 const { WS_INTERVAL } = require("./lib/ws-config");
 
 // This file now only runs the WebSocket server.
@@ -9,7 +9,7 @@ const WS_PORT = Number(process.env.WS_PORT) || 3001;
 
 const state = {};
 const ranges = {};
-Object.values(METRICS).forEach((m) => {
+Object.values(DATA).forEach((m) => {
   state[m.key] = m.initial;
   ranges[m.key] = { min: m.min, max: m.max, step: m.step };
 });

@@ -1,6 +1,6 @@
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { METRICS } from "@/lib/metrics";
+import { DATA } from "@/lib/data";
 
 type HorizontalBarProps = {
   value: number;
@@ -12,7 +12,7 @@ type HorizontalBarProps = {
   Icon?: React.ElementType;
   iconClassName?: string;
 
-  metric?: keyof typeof METRICS;
+  data?: keyof typeof DATA;
 };
 
 export function HorizontalBar({
@@ -24,17 +24,17 @@ export function HorizontalBar({
   additionalUnit,
   Icon,
   iconClassName = "w-4 h-4",
-  metric,
+  data,
 }: HorizontalBarProps) {
   const normalizedValue = ((value - min) / (max - min)) * 100;
 
   let color = "#10B981";
 
-  let resolvedMetric: keyof typeof METRICS | undefined = metric;
+  let resolvedMetric: keyof typeof DATA | undefined = data;
   if (!resolvedMetric) {
-    const keys = Object.keys(METRICS) as Array<keyof typeof METRICS>;
+    const keys = Object.keys(DATA) as Array<keyof typeof DATA>;
     for (const k of keys) {
-      const m = METRICS[k];
+      const m = DATA[k];
 
       const eps = 1e-6;
       if (Math.abs(m.min - min) < eps && Math.abs(m.max - max) < eps) {
@@ -46,13 +46,13 @@ export function HorizontalBar({
 
   if (
     resolvedMetric &&
-    METRICS[resolvedMetric] &&
-    typeof METRICS[resolvedMetric].colorFor === "function"
+    DATA[resolvedMetric] &&
+    typeof DATA[resolvedMetric].colorFor === "function"
   ) {
     try {
-      color = METRICS[resolvedMetric].colorFor(value);
+      color = DATA[resolvedMetric].colorFor(value);
     } catch {
-      console.warn("METRICS colorFor failed for", resolvedMetric);
+      console.warn("DATA colorFor failed for", resolvedMetric);
     }
   } else {
     const pct = max === min ? 0 : (value - min) / (max - min);

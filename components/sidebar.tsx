@@ -18,8 +18,8 @@ const navItems = [
     color: "text-orange-500",
   },
   {
-    href: "/metrics",
-    label: "Metriche",
+    href: "/data",
+    label: "Dati",
     Icon: Gauge,
     color: "text-sky-500",
   },

@@ -16,19 +16,19 @@ type GaugeProps = {
   min?: number;
   max?: number;
   label?: string;
-  metric?: keyof typeof METRICS;
+  data?: keyof typeof DATA;
   startDeg?: number;
   clockwise?: boolean;
 };
 
-import { METRICS } from "@/lib/metrics";
+import { DATA } from "@/lib/data";
 
 export function Gauge({
   value = 0,
   min = 0,
   max = 360,
   label = "Gauge",
-  metric,
+  data,
   startDeg = 90,
   clockwise = true,
 }: GaugeProps) {
@@ -44,15 +44,11 @@ export function Gauge({
 
   let arcColor = "#10B981";
 
-  if (
-    metric &&
-    METRICS[metric] &&
-    typeof METRICS[metric].colorFor === "function"
-  ) {
+  if (data && DATA[data] && typeof DATA[data].colorFor === "function") {
     try {
-      arcColor = METRICS[metric].colorFor(clamped);
+      arcColor = DATA[data].colorFor(clamped);
     } catch {
-      console.warn("METRICS colorFor failed for", metric);
+      console.warn("DATA colorFor failed for", data);
     }
   } else {
     const normalizedLabel = String(label).toLowerCase();

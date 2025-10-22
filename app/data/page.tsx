@@ -7,7 +7,7 @@ import { ThermometerSnowflake, Fuel, BatteryCharging } from "lucide-react";
 import { TbRoad } from "react-icons/tb";
 import { SiCarthrottle } from "react-icons/si";
 import { PiGasCan } from "react-icons/pi";
-import { METRICS } from "@/lib/metrics";
+import { DATA } from "@/lib/data";
 import useOBDData from "@/hooks/use-obd-data";
 
 export default function Metrics() {
@@ -18,27 +18,27 @@ export default function Metrics() {
       <div className="flex items-center justify-between px-16">
         <HorizontalBar
           value={Number(obdData.fuelConsumption.toFixed(2))}
-          metric="fuelConsumption"
-          min={METRICS.fuelConsumption.min}
-          max={METRICS.fuelConsumption.max}
+          data="fuelConsumption"
+          min={DATA.fuelConsumption.min}
+          max={DATA.fuelConsumption.max}
           unit="KM/L"
           Icon={Fuel}
         />
         <HorizontalBar
           value={obdData.fuelLevel}
           additionalValue={obdData.residualKms}
-          metric="fuelLevel"
-          min={METRICS.fuelLevel.min}
-          max={METRICS.fuelLevel.max}
+          data="fuelLevel"
+          min={DATA.fuelLevel.min}
+          max={DATA.fuelLevel.max}
           unit="%"
           additionalUnit="KM"
           Icon={PiGasCan}
         />
         <HorizontalBar
           value={obdData.throttlePosition}
-          metric="throttlePosition"
-          min={METRICS.throttlePosition.min}
-          max={METRICS.throttlePosition.max}
+          data="throttlePosition"
+          min={DATA.throttlePosition.min}
+          max={DATA.throttlePosition.max}
           unit="%"
           Icon={SiCarthrottle}
         />
@@ -47,10 +47,10 @@ export default function Metrics() {
         <div className="w-96">
           <Gauge
             value={obdData.rpm}
-            min={METRICS.rpm.min}
-            max={METRICS.rpm.max}
+            min={DATA.rpm.min}
+            max={DATA.rpm.max}
             label="RPM"
-            metric="rpm"
+            data="rpm"
           />
         </div>
         <Image
@@ -63,19 +63,19 @@ export default function Metrics() {
         <div className="w-96">
           <Gauge
             value={obdData.speed}
-            min={METRICS.speed.min}
-            max={METRICS.speed.max}
+            min={DATA.speed.min}
+            max={DATA.speed.max}
             label="KM/H"
-            metric="speed"
+            data="speed"
           />
         </div>
       </div>
       <div className="flex items-center justify-between px-16">
         <HorizontalBar
           value={obdData.engineTemp}
-          metric="engineTemp"
-          min={METRICS.engineTemp.min}
-          max={METRICS.engineTemp.max}
+          data="engineTemp"
+          min={DATA.engineTemp.min}
+          max={DATA.engineTemp.max}
           unit="°C"
           Icon={ThermometerSnowflake}
         />
@@ -85,9 +85,9 @@ export default function Metrics() {
         </div>
         <HorizontalBar
           value={Number(obdData.batteryVoltage.toFixed(1))}
-          metric="batteryVoltage"
-          min={METRICS.batteryVoltage.min}
-          max={METRICS.batteryVoltage.max}
+          data="batteryVoltage"
+          min={DATA.batteryVoltage.min}
+          max={DATA.batteryVoltage.max}
           unit="V"
           Icon={BatteryCharging}
         />
