@@ -1,12 +1,11 @@
 const { createServer } = require("http");
-const next = require("next");
 const WebSocket = require("ws");
 const { METRICS } = require("./lib/metrics");
 const { WS_INTERVAL } = require("./lib/ws-config");
 
-const dev = process.env.NODE_ENV !== "production";
-const app = next({ dev });
-const handle = app.getRequestHandler();
+// This file now only runs the WebSocket server.
+// Default WS port is 3001 so you can run Next separately on 3000.
+const WS_PORT = Number(process.env.WS_PORT) || 3001;
 
 const state = {};
 const ranges = {};
@@ -22,45 +21,50 @@ function incrementLoop(param) {
   }
 }
 
-app.prepare().then(() => {
-  const server = createServer((req, res) => {
-    handle(req, res);
-  });
+const server = createServer((req, res) => {
+  // simple health endpoint
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("WebSocket server running\n");
+    return;
+  }
 
-  const wss = new WebSocket.Server({ noServer: true });
+  res.writeHead(404);
+  res.end();
+});
 
-  wss.on("connection", (ws) => {
-    console.log("Client connected");
+const wss = new WebSocket.Server({ noServer: true });
 
-    const sendDataInterval = setInterval(() => {
-      Object.keys(state).forEach((param) => incrementLoop(param));
+wss.on("connection", (ws) => {
+  console.log("Client connected");
 
-      try {
-        ws.send(JSON.stringify(state));
-      } catch (err) {
-        console.error("Failed to send ws message:", err);
-      }
-    }, WS_INTERVAL);
+  const sendDataInterval = setInterval(() => {
+    Object.keys(state).forEach((param) => incrementLoop(param));
 
-    ws.on("close", () => {
-      console.log("Client disconnected");
-      clearInterval(sendDataInterval);
-    });
-  });
-
-  server.on("upgrade", (req, socket, head) => {
-    const { url } = req;
-    if (url === "/ws") {
-      wss.handleUpgrade(req, socket, head, (ws) => {
-        wss.emit("connection", ws, req);
-      });
-    } else {
-      socket.destroy();
+    try {
+      ws.send(JSON.stringify(state));
+    } catch (err) {
+      console.error("Failed to send ws message:", err);
     }
-  });
+  }, WS_INTERVAL);
 
-  const PORT = process.env.PORT || 3000;
-  server.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
+  ws.on("close", () => {
+    console.log("Client disconnected");
+    clearInterval(sendDataInterval);
   });
+});
+
+server.on("upgrade", (req, socket, head) => {
+  const { url } = req;
+  if (url === "/ws") {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      wss.emit("connection", ws, req);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+server.listen(WS_PORT, () => {
+  console.log(`WebSocket server listening on ws://localhost:${WS_PORT}/ws`);
 });

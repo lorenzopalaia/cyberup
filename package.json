@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "TURBOPACK=1 node server.js",
+    "dev:client": "next dev --turbopack",
+    "dev:server": "node server.js",
+    "dev:all": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
     "prebuild": "npm run format && npm run knip",
-    "build": "TURBOPACK=1 next build",
-    "start": "NODE_ENV=production node server.js",
+    "build": "next build --turbopack",
+    "start:client": "next start",
+    "start:server": "NODE_ENV=production node server.js",
+    "start:all": "concurrently \"npm:start:server\" \"npm:start:client\"",
     "lint": "eslint",
     "knip": "knip",
     "format": "prettier --write .",
@@ -29,6 +33,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.15",
     "@types/node": "^24.9.1",

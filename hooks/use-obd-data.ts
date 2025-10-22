@@ -45,7 +45,9 @@ export default function useOBDData(): OBDData & {
   ]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3000/ws");
+    const envPort = process.env.WS_PORT || "3001";
+    const wsUrl = `ws://localhost:${envPort}/ws`;
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
       console.log("WebSocket connection established");
