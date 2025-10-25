@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useEffect, useState } from "react";
+import { io, type Socket } from "socket.io-client";
 import { DATA_POINTS } from "@/lib/ws-config";
 import { ERROR_MAP } from "@/lib/errors";
 
@@ -67,22 +68,21 @@ export function OBDProvider({
 
   useEffect(() => {
     const envPort = process.env.WS_PORT || "3001";
-    const wsUrl = `ws://localhost:${envPort}/ws`;
-    const ws = new WebSocket(wsUrl);
+    const url = `http://localhost:${envPort}`;
 
-    ws.onopen = () => {
-      console.log("WebSocket connection established");
-    };
+    const socket: Socket = io(url, {
+      path: "/ws",
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelayMax: 5000,
+      transports: ["websocket", "polling"],
+    });
 
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data) as any;
+    socket.on("connect", () => {
+      console.log("Socket.IO connected", socket.id);
+    });
 
-      if (message && typeof message === "object" && message.errorCode) {
-        const code = String(message.errorCode);
-        setErrorCode(code);
-        setErrorMessage(ERROR_MAP[code] ?? { title: code, description: "" });
-      }
-
+    socket.on("update", (message: any) => {
       const messageData = message as Partial<OBDData>;
 
       const residualKms = Math.round(
@@ -123,17 +123,31 @@ export function OBDProvider({
           next.splice(0, next.length - DATA_POINTS);
         return next;
       });
-    };
+    });
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
+    socket.on("errorCode", (payload: any) => {
+      if (payload && payload.errorCode) {
+        const code = String(payload.errorCode);
+        setErrorCode(code);
+        setErrorMessage(ERROR_MAP[code] ?? { title: code, description: "" });
+      }
+    });
 
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+    socket.on("connect_error", (err: any) => {
+      console.error("Socket.IO connect error:", err);
+    });
 
-    return () => ws.close();
+    socket.on("disconnect", (reason: any) => {
+      console.log("Socket.IO disconnected:", reason);
+    });
+
+    return () => {
+      try {
+        socket.disconnect();
+      } catch (err) {
+        // ignore
+      }
+    };
   }, []);
 
   const value: OBDContextValue = {

@@ -1,5 +1,5 @@
 const { createServer } = require("http");
-const WebSocket = require("ws");
+const { Server: IOServer } = require("socket.io");
 const { DATA } = require("./lib/data");
 const { WS_INTERVAL } = require("./lib/ws-config");
 
@@ -33,53 +33,44 @@ const server = createServer((req, res) => {
   res.end();
 });
 
-const wss = new WebSocket.Server({ noServer: true });
+let io;
 
-// Broadcast an error code ERR01 to all connected clients every 30 seconds
 const ERROR_BROADCAST_INTERVAL_MS = 30 * 1000;
 setInterval(() => {
-  const payload = JSON.stringify({ errorCode: "ERR01" });
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      try {
-        client.send(payload);
-      } catch (err) {
-        // ignore per-client send errors
-      }
+  try {
+    if (io) {
+      io.emit("errorCode", { errorCode: "ERR01" });
     }
-  });
+  } catch (err) {}
 }, ERROR_BROADCAST_INTERVAL_MS);
 
-wss.on("connection", (ws) => {
-  console.log("Client connected");
+io = new IOServer(server, {
+  path: "/ws",
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("Client connected (socket.io)");
 
   const sendDataInterval = setInterval(() => {
     Object.keys(state).forEach((param) => incrementLoop(param));
-
     try {
-      ws.send(JSON.stringify(state));
+      socket.emit("update", state);
     } catch (err) {
-      console.error("Failed to send ws message:", err);
+      console.error("Failed to emit update:", err);
     }
   }, WS_INTERVAL);
 
-  ws.on("close", () => {
-    console.log("Client disconnected");
+  socket.on("disconnect", () => {
+    console.log("Client disconnected (socket.io)");
     clearInterval(sendDataInterval);
   });
 });
 
-server.on("upgrade", (req, socket, head) => {
-  const { url } = req;
-  if (url === "/ws") {
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      wss.emit("connection", ws, req);
-    });
-  } else {
-    socket.destroy();
-  }
-});
-
 server.listen(WS_PORT, () => {
-  console.log(`WebSocket server listening on ws://localhost:${WS_PORT}/ws`);
+  console.log(
+    `Socket.IO server listening on http://localhost:${WS_PORT} (path=/ws)`,
+  );
 });
