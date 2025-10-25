@@ -19,6 +19,7 @@ type GaugeProps = {
   data?: keyof typeof DATA;
   startDeg?: number;
   clockwise?: boolean;
+  redArcStartDeg?: number;
 };
 
 import { DATA } from "@/lib/data";
@@ -31,6 +32,7 @@ export function Gauge({
   data,
   startDeg = 90,
   clockwise = true,
+  redArcStartDeg = 270,
 }: GaugeProps) {
   const startAngle = startDeg;
   const endAngle = clockwise ? startDeg - 360 : startDeg + 360;
@@ -111,7 +113,7 @@ export function Gauge({
         startAngle={startAngle}
         endAngle={endAngle}
         innerRadius={80}
-        outerRadius={110}
+        outerRadius={120}
       >
         <PolarAngleAxis type="number" domain={[0, angleRange]} tick={false} />
         <PolarGrid
@@ -131,84 +133,142 @@ export function Gauge({
           <Label
             content={({ viewBox }) => {
               if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                // draw a red arc
+                const cx = (viewBox.cx ?? 0) as number;
+                const cy = (viewBox.cy ?? 0) as number;
+                const arcRadius = 94;
+
+                const redArcStartAngle = redArcStartDeg - 180;
+                const segStartAngle = 0;
+                const segEndAngle =
+                  redArcStartAngle +
+                  (clockwise ? -angleRange * 0.5 : angleRange * 0.5);
+
+                const polarToCartesian = (
+                  cx: number,
+                  cy: number,
+                  r: number,
+                  angleDeg: number,
+                ) => {
+                  const angleRad = ((angleDeg - 90) * Math.PI) / 180.0;
+                  return {
+                    x: cx + r * Math.cos(angleRad),
+                    y: cy + r * Math.sin(angleRad),
+                  };
+                };
+
+                const describeArc = (
+                  cx: number,
+                  cy: number,
+                  r: number,
+                  startAngle: number,
+                  endAngle: number,
+                  clockwiseFlag: boolean,
+                ) => {
+                  const start = polarToCartesian(cx, cy, r, startAngle);
+                  const end = polarToCartesian(cx, cy, r, endAngle);
+                  const delta = Math.abs(endAngle - startAngle);
+                  const largeArcFlag = delta <= 180 ? "0" : "1";
+                  const sweepFlag = clockwiseFlag ? "0" : "1";
+                  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
+                };
+
+                const pathD = describeArc(
+                  cx,
+                  cy,
+                  arcRadius,
+                  segStartAngle,
+                  segEndAngle,
+                  clockwise,
+                );
+
                 return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    <tspan
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      className="fill-foreground text-4xl font-bold"
+                  <g>
+                    <path
+                      d={pathD}
+                      stroke="#EF4444"
+                      strokeWidth={4}
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                    <text
+                      x={cx}
+                      y={cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
                     >
-                      {clamped.toLocaleString()}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 24}
-                      className="fill-muted-foreground"
-                    >
-                      {label}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 104}
-                      className="fill-muted-foreground"
-                    >
-                      {min}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) + 78}
-                      y={(viewBox.cy || 0) - 78}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.125)}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) + 104}
-                      y={viewBox.cy}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.25)}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) + 78}
-                      y={(viewBox.cy || 0) + 78}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.375)}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 104}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.5)}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) - 78}
-                      y={(viewBox.cy || 0) + 78}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.625)}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) - 104}
-                      y={viewBox.cy}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.75)}
-                    </tspan>
-                    <tspan
-                      x={(viewBox.cx || 0) - 78}
-                      y={(viewBox.cy || 0) - 78}
-                      className="fill-muted-foreground"
-                    >
-                      {Math.round(max * 0.875)}
-                    </tspan>
-                  </text>
+                      <tspan
+                        x={cx}
+                        y={cy}
+                        className="fill-foreground text-4xl font-bold"
+                      >
+                        {clamped.toLocaleString()}
+                      </tspan>
+                      <tspan
+                        x={cx}
+                        y={cy + 24}
+                        className="fill-muted-foreground"
+                      >
+                        {label}
+                      </tspan>
+                      <tspan
+                        x={cx}
+                        y={cy - 104}
+                        className="fill-muted-foreground"
+                      >
+                        {min}
+                      </tspan>
+                      <tspan
+                        x={cx + 78}
+                        y={cy - 78}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.125)}
+                      </tspan>
+                      <tspan
+                        x={cx + 104}
+                        y={cy}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.25)}
+                      </tspan>
+                      <tspan
+                        x={cx + 78}
+                        y={cy + 78}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.375)}
+                      </tspan>
+                      <tspan
+                        x={cx}
+                        y={cy + 104}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.5)}
+                      </tspan>
+                      <tspan
+                        x={cx - 78}
+                        y={cy + 78}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.625)}
+                      </tspan>
+                      <tspan
+                        x={cx - 104}
+                        y={cy}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.75)}
+                      </tspan>
+                      <tspan
+                        x={cx - 78}
+                        y={cy - 78}
+                        className="fill-muted-foreground"
+                      >
+                        {Math.round(max * 0.875)}
+                      </tspan>
+                    </text>
+                  </g>
                 );
               }
               return null;

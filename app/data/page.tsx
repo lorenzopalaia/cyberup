@@ -51,6 +51,7 @@ export default function Metrics() {
             max={DATA.rpm.max}
             label="RPM"
             data="rpm"
+            redArcStartDeg={(DATA.rpm.redValue / DATA.rpm.max) * 360}
           />
         </div>
         <Image
@@ -67,6 +68,7 @@ export default function Metrics() {
             max={DATA.speed.max}
             label="KM/H"
             data="speed"
+            redArcStartDeg={(DATA.speed.redValue / DATA.speed.max) * 360}
           />
         </div>
       </div>
