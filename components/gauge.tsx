@@ -133,7 +133,6 @@ export function Gauge({
           <Label
             content={({ viewBox }) => {
               if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                // draw a red arc
                 const cx = (viewBox.cx ?? 0) as number;
                 const cy = (viewBox.cy ?? 0) as number;
                 const arcRadius = 94;

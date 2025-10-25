@@ -4,6 +4,8 @@ import "./globals.css";
 
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
+import { OBDProvider } from "@/hooks/obd-context";
+import OBDErrorDialog from "@/components/obd-error-dialog";
 
 const geistMono = Geist_Mono({
   variable: "--font-mono",
@@ -25,11 +27,14 @@ export default function RootLayout({
       <body
         className={`${geistMono.variable} dark overflow-hidden antialiased`}
       >
-        <Header />
-        <div className="flex h-[calc(100vh-4rem)] gap-4 p-4">
-          <Sidebar />
-          {children}
-        </div>
+        <OBDProvider>
+          <Header />
+          <OBDErrorDialog />
+          <div className="flex h-[calc(100vh-4rem)] gap-4 p-4">
+            <Sidebar />
+            {children}
+          </div>
+        </OBDProvider>
       </body>
     </html>
   );

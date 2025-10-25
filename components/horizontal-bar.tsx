@@ -75,7 +75,7 @@ export function HorizontalBar({
           {additionalUnit}
         </span>
       </div>
-      <div className="[&_[data-slot=progress-indicator]]:bg-[var(--hb-indicator)]">
+      <div className="**:data-[slot=progress-indicator]:bg-(--hb-indicator)">
         <Progress value={normalizedValue} />
       </div>
       <div className="flex items-center justify-between">

@@ -35,6 +35,21 @@ const server = createServer((req, res) => {
 
 const wss = new WebSocket.Server({ noServer: true });
 
+// Broadcast an error code ERR01 to all connected clients every 30 seconds
+const ERROR_BROADCAST_INTERVAL_MS = 30 * 1000;
+setInterval(() => {
+  const payload = JSON.stringify({ errorCode: "ERR01" });
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      try {
+        client.send(payload);
+      } catch (err) {
+        // ignore per-client send errors
+      }
+    }
+  });
+}, ERROR_BROADCAST_INTERVAL_MS);
+
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
