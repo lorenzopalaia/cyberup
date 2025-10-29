@@ -10,7 +10,7 @@ import { PiGasCan } from "react-icons/pi";
 import { DATA } from "@/lib/data";
 import useOBDData from "@/hooks/use-obd-data";
 
-export default function Metrics() {
+export default function Data() {
   const obdData = useOBDData();
 
   return (

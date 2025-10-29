@@ -30,29 +30,29 @@ export function HorizontalBar({
 
   let color = "#10B981";
 
-  let resolvedMetric: keyof typeof DATA | undefined = data;
-  if (!resolvedMetric) {
+  let resolvedData: keyof typeof DATA | undefined = data;
+  if (!resolvedData) {
     const keys = Object.keys(DATA) as Array<keyof typeof DATA>;
     for (const k of keys) {
       const m = DATA[k];
 
       const eps = 1e-6;
       if (Math.abs(m.min - min) < eps && Math.abs(m.max - max) < eps) {
-        resolvedMetric = k;
+        resolvedData = k;
         break;
       }
     }
   }
 
   if (
-    resolvedMetric &&
-    DATA[resolvedMetric] &&
-    typeof DATA[resolvedMetric].colorFor === "function"
+    resolvedData &&
+    DATA[resolvedData] &&
+    typeof DATA[resolvedData].colorFor === "function"
   ) {
     try {
-      color = DATA[resolvedMetric].colorFor(value);
+      color = DATA[resolvedData].colorFor(value);
     } catch {
-      console.warn("DATA colorFor failed for", resolvedMetric);
+      console.warn("DATA colorFor failed for", resolvedData);
     }
   } else {
     const pct = max === min ? 0 : (value - min) / (max - min);
