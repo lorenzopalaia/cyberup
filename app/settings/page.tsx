@@ -16,17 +16,23 @@ function ProgressDialog({
   open,
   onOpenChange,
   percent,
+  message,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   percent: number;
+  message: string | null;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Aggiornamento in corso...</DialogTitle>
-          <DialogDescription>Attendere prego.</DialogDescription>
+          <DialogDescription>
+            {percent >= 100
+              ? message || "Aggiornamento completato"
+              : message || "Attendere prego."}
+          </DialogDescription>
         </DialogHeader>
         <Progress value={percent} />
       </DialogContent>
@@ -36,6 +42,7 @@ function ProgressDialog({
 
 export default function Settings() {
   const [percent, setPercent] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
@@ -51,22 +58,41 @@ export default function Settings() {
     socket.on("updateProgress", (data: any) => {
       if (data && typeof data.percent === "number") {
         setPercent(data.percent);
+        if (data.message && typeof data.message === "string") {
+          setStatusMessage(data.message);
+        } else if (data.stage && typeof data.stage === "string") {
+          // map basic stages to italian  messages
+          const stageMap: Record<string, string> = {
+            start: "Inizio update",
+            fetch: "Fetch completato",
+            "pull-start": "Avvio pull",
+            pull: "Pull completato",
+            "build-start": "Avvio build",
+            build: "Build completato",
+            "up-to-date": "Repository aggiornato",
+            done: "Completato",
+          };
+          setStatusMessage(stageMap[data.stage] || data.stage);
+        }
       }
     });
 
     socket.on("updateError", (data: any) => {
       console.error("update error", data);
+      setStatusMessage(data?.message || "Errore durante l'update");
       setPercent(null);
       setIsDialogOpen(false);
     });
 
     socket.on("updateComplete", () => {
       setPercent(100);
+      setStatusMessage("Aggiornamento completato");
     });
 
     socket.on("disconnect", () => {
       setIsDialogOpen(false);
       setPercent(null);
+      setStatusMessage(null);
     });
 
     return () => {
@@ -80,6 +106,7 @@ export default function Settings() {
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit("triggerUpdate");
       setPercent(0);
+      setStatusMessage("Inizio update");
     } else {
       console.warn("Socket not connected");
     }
@@ -96,8 +123,10 @@ export default function Settings() {
           // quando l'utente chiude il dialog resetta lo stato
           setIsDialogOpen(v);
           if (!v) setPercent(null);
+          if (!v) setStatusMessage(null);
         }}
         percent={percent ?? 0}
+        message={statusMessage}
       />
     </div>
   );
