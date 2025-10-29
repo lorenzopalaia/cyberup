@@ -4,8 +4,9 @@
 4. Clone della repo su desktop
 5. Aumentare spazio di swap a 4GB
 6. Aumentare ram occupabile da node a 4GB
-7. Installazione pacchetti npm
-8. Job di lancio di chromium su localhost in modalità kiosk al boot del device
+7. Impostare npm config set fetch-retry-mintimeout 20000 e npm config set fetch-retry-maxtimeout 120000
+8. Installazione pacchetti npm
+9. Job di lancio di chromium su localhost in modalità kiosk al boot del device
 
 Prossimi passi
 1. Repo privata? Se si login sull'OS con github per il fetch/pull per l'update
