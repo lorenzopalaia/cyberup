@@ -67,6 +67,8 @@ export default function Settings() {
             fetch: "Fetch completato",
             "pull-start": "Avvio pull",
             pull: "Pull completato",
+            "install-start": "Avvio install",
+            install: "Install completato",
             "build-start": "Avvio build",
             build: "Build completato",
             "up-to-date": "Repository aggiornato",

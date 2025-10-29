@@ -185,10 +185,43 @@ io.on("connection", (socket) => {
           return;
         }
 
-        // 4) Se il pull ha portato modifiche, esegui build
-        console.log("Starting build phase: npm run build");
+        // 4) Se il pull ha portato modifiche, esegui npm install
+        console.log("Starting install phase: npm install");
         socket.emit("updateProgress", {
           percent: 90,
+          stage: "install-start",
+          message: "Eseguo npm install",
+        });
+
+        try {
+          const installRes = await execP("npm install", { cwd: process.cwd() });
+          console.log(
+            "Install completed:",
+            installRes.stdout || installRes.stderr,
+          );
+          socket.emit("updateProgress", {
+            percent: 94,
+            stage: "install",
+            message: installRes.stdout || "install completed",
+            stderr: installRes.stderr || null,
+          });
+        } catch (installErr) {
+          const msg =
+            installErr instanceof Error
+              ? installErr.message
+              : String(installErr);
+          console.error("Error during npm install:", msg);
+          socket.emit("updateError", {
+            message: `Errore durante npm install: ${msg}`,
+          });
+          updateRunning = false;
+          return;
+        }
+
+        // 5) Esegui npm run build
+        console.log("Starting build phase: npm run build");
+        socket.emit("updateProgress", {
+          percent: 95,
           stage: "build-start",
           message: "Eseguo npm run build",
         });
@@ -222,6 +255,15 @@ io.on("connection", (socket) => {
         updateRunning = false;
         return;
       }
+
+      // TODO: 6) Termina il processo concurrently che esegue server e client, da capire come farlo
+
+      // TODO: 7) Riavvia server + client con npm run start:all
+
+      // Aspettare quei 1-2 secondi che si avviano, idealmente catturare output per capire quando sono pronti
+      // Altrimenti si può fare un semplice delay fisso di qualche secondo
+      // O forzare un reboot del raspberry
+      // TODO: 8) Far ripartire chromium sempre in modalità kiosk sulla homepage -> ovvero reindirizzare se possibile
 
       // Fine: segnala completamento
       console.log("Update completed successfully");
