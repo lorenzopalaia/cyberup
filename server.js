@@ -89,23 +89,14 @@ io.on("connection", (socket) => {
 
     try {
       console.log("Starting update pipeline");
-      socket.emit("updateProgress", {
-        percent: 0,
-        stage: "start",
-        message: "Inizio update",
-      });
+      socket.emit("updateProgress", { stage: "start" });
 
       // 1) git fetch
       try {
         console.log("Running: git fetch");
         const fetchRes = await execP("git fetch", { cwd: process.cwd() });
         console.log("git fetch completed:", fetchRes.stdout || fetchRes.stderr);
-        socket.emit("updateProgress", {
-          percent: 25,
-          stage: "fetch",
-          message: fetchRes.stdout || "fetch completed",
-          stderr: fetchRes.stderr || null,
-        });
+        socket.emit("updateProgress", { stage: "fetch" });
       } catch (fetchErr) {
         const msg =
           fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
@@ -158,22 +149,13 @@ io.on("connection", (socket) => {
       if (behind > 0) {
         // Emit a mid-stage indicating pull will start
         console.log(`Starting git pull, ${behind} commits to fetch`);
-        socket.emit("updateProgress", {
-          percent: 55,
-          stage: "pull-start",
-          message: `Eseguo git pull (${behind} commit)`,
-        });
+        socket.emit("updateProgress", { stage: "pull-start" });
 
         try {
           console.log("Running: git pull");
           const pullRes = await execP("git pull", { cwd: process.cwd() });
           console.log("git pull completed:", pullRes.stdout || pullRes.stderr);
-          socket.emit("updateProgress", {
-            percent: 85,
-            stage: "pull",
-            message: pullRes.stdout || "pull completed",
-            stderr: pullRes.stderr || null,
-          });
+          socket.emit("updateProgress", { stage: "pull" });
         } catch (pullErr) {
           const msg =
             pullErr instanceof Error ? pullErr.message : String(pullErr);
@@ -187,11 +169,7 @@ io.on("connection", (socket) => {
 
         // 4) Se il pull ha portato modifiche, esegui npm install
         console.log("Starting install phase: npm install");
-        socket.emit("updateProgress", {
-          percent: 90,
-          stage: "install-start",
-          message: "Eseguo npm install",
-        });
+        socket.emit("updateProgress", { stage: "install-start" });
 
         try {
           const installRes = await execP("npm install", { cwd: process.cwd() });
@@ -199,12 +177,7 @@ io.on("connection", (socket) => {
             "Install completed:",
             installRes.stdout || installRes.stderr,
           );
-          socket.emit("updateProgress", {
-            percent: 94,
-            stage: "install",
-            message: installRes.stdout || "install completed",
-            stderr: installRes.stderr || null,
-          });
+          socket.emit("updateProgress", { stage: "install" });
         } catch (installErr) {
           const msg =
             installErr instanceof Error
@@ -218,23 +191,84 @@ io.on("connection", (socket) => {
           return;
         }
 
-        // 5) Esegui npm run build
-        console.log("Starting build phase: npm run build");
-        socket.emit("updateProgress", {
-          percent: 95,
-          stage: "build-start",
-          message: "Eseguo npm run build",
-        });
+        // 5) Esegui npm run build:prod
+        console.log("Starting build phase: npm run build:prod");
+        socket.emit("updateProgress", { stage: "build-start" });
 
         try {
-          const buildRes = await execP("npm run build", { cwd: process.cwd() });
-          console.log("Build completed:", buildRes.stdout || buildRes.stderr);
-          socket.emit("updateProgress", {
-            percent: 98,
-            stage: "build",
-            message: buildRes.stdout || "build completed",
-            stderr: buildRes.stderr || null,
+          const buildRes = await execP("npm run build:prod", {
+            cwd: process.cwd(),
           });
+          console.log("Build completed:", buildRes.stdout || buildRes.stderr);
+          socket.emit("updateProgress", { stage: "build" });
+
+          // 6) Se npm install/build ha introdotto modifiche locali (es. package-lock.json) committale e pushale verso l'upstream.
+          try {
+            console.log("Checking for workspace changes after install/build");
+            const { stdout: statusStdout } = await execP(
+              "git status --porcelain",
+              { cwd: process.cwd() },
+            );
+            if (statusStdout && statusStdout.trim() !== "") {
+              console.log("Working tree has changes, committing and pushing");
+              socket.emit("updateProgress", { stage: "commit-start" });
+
+              // aggiungi tutte le modifiche
+              await execP("git add -A", { cwd: process.cwd() });
+
+              const commitMessage =
+                "Automatic update: update automatico (npm install/build)";
+              try {
+                const { stdout: commitOut } = await execP(
+                  `git commit -m "${commitMessage}"`,
+                  { cwd: process.cwd() },
+                );
+                console.log("Commit completed:", commitOut);
+                socket.emit("updateProgress", { stage: "commit" });
+              } catch (commitErr) {
+                const msg =
+                  commitErr instanceof Error
+                    ? commitErr.message
+                    : String(commitErr);
+                console.error("Error during git commit:", msg);
+                socket.emit("updateError", {
+                  message: `Errore durante git commit: ${msg}`,
+                });
+                updateRunning = false;
+                return;
+              }
+
+              // Push verso l'upstream determinato in precedenza (es: origin/main)
+              try {
+                const upstreamParts = upstream.split("/");
+                const remote = upstreamParts[0] || "origin";
+                const branch = upstreamParts.slice(1).join("/") || "HEAD";
+                socket.emit("updateProgress", { stage: "push-start" });
+                const { stdout: pushOut } = await execP(
+                  `git push ${remote} HEAD:${branch}`,
+                  { cwd: process.cwd() },
+                );
+                console.log("Push completed:", pushOut);
+                socket.emit("updateProgress", { stage: "push" });
+              } catch (pushErr) {
+                const msg =
+                  pushErr instanceof Error ? pushErr.message : String(pushErr);
+                console.error("Error during git push:", msg);
+                socket.emit("updateError", {
+                  message: `Errore durante git push: ${msg}`,
+                });
+                updateRunning = false;
+                return;
+              }
+            } else {
+              console.log("No local changes after install/build");
+              socket.emit("updateProgress", { stage: "no-changes" });
+            }
+          } catch (statusErr) {
+            console.error("Error checking git status:", statusErr);
+            // non bloccante: log e procedi
+            socket.emit("updateProgress", { stage: "status-check-error" });
+          }
         } catch (buildErr) {
           const msg =
             buildErr instanceof Error ? buildErr.message : String(buildErr);
@@ -247,11 +281,7 @@ io.on("connection", (socket) => {
         }
       } else {
         console.log("Repository already up-to-date. No pull needed.");
-        socket.emit("updateProgress", {
-          percent: 100,
-          stage: "up-to-date",
-          message: "Nessuna modifica remota da pullare",
-        });
+        socket.emit("updateProgress", { stage: "up-to-date" });
         updateRunning = false;
         return;
       }
@@ -267,11 +297,7 @@ io.on("connection", (socket) => {
 
       // Fine: segnala completamento
       console.log("Update completed successfully");
-      socket.emit("updateProgress", {
-        percent: 100,
-        stage: "done",
-        message: "Update completato",
-      });
+      socket.emit("updateProgress", { stage: "done" });
       socket.emit("updateComplete", { success: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

@@ -56,27 +56,40 @@ export default function Settings() {
     });
 
     socket.on("updateProgress", (data: any) => {
-      if (data && typeof data.percent === "number") {
-        setPercent(data.percent);
-        if (data.message && typeof data.message === "string") {
-          setStatusMessage(data.message);
-        } else if (data.stage && typeof data.stage === "string") {
-          // map basic stages to italian  messages
-          const stageMap: Record<string, string> = {
-            start: "Inizio update",
-            fetch: "Fetch completato",
-            "pull-start": "Avvio pull",
-            pull: "Pull completato",
-            "install-start": "Avvio install",
-            install: "Install completato",
-            "build-start": "Avvio build",
-            build: "Build completato",
-            "up-to-date": "Repository aggiornato",
-            done: "Completato",
-          };
-          setStatusMessage(stageMap[data.stage] || data.stage);
-        }
-      }
+      if (!data || typeof data.stage !== "string") return;
+
+      const stageToInfo: Record<string, { percent: number; message: string }> =
+        {
+          start: { percent: 0, message: "Inizio update" },
+          fetch: { percent: 5, message: "Fetch completato" },
+          "pull-start": { percent: 10, message: "Avvio pull" },
+          pull: { percent: 30, message: "Pull completato" },
+          "install-start": { percent: 35, message: "Avvio install" },
+          install: { percent: 65, message: "Install completato" },
+          "build-start": { percent: 70, message: "Avvio build" },
+          build: { percent: 95, message: "Build completato" },
+          "commit-start": { percent: 96, message: "Preparazione commit" },
+          commit: { percent: 97, message: "Commit completato" },
+          "push-start": { percent: 98, message: "Avvio push" },
+          push: { percent: 99, message: "Push completato" },
+          "no-changes": {
+            percent: 96,
+            message: "Nessuna modifica locale da committare",
+          },
+          "status-check-error": {
+            percent: 96,
+            message: "Errore controllo stato git",
+          },
+          "up-to-date": { percent: 100, message: "Repository aggiornato" },
+          done: { percent: 100, message: "Completato" },
+        };
+
+      const info = stageToInfo[data.stage] || {
+        percent: 0,
+        message: data.stage,
+      };
+      setPercent(info.percent);
+      setStatusMessage(info.message);
     });
 
     socket.on("updateError", (data: any) => {
