@@ -1,7 +1,7 @@
 import { createServer } from "http";
 import { Server as IOServer } from "socket.io";
-import { DATA } from "./lib/data";
-import { WS_INTERVAL } from "./lib/ws-config";
+import { DATA } from "./lib/data.js";
+import { WS_INTERVAL } from "./lib/ws-config.js";
 import { exec } from "child_process";
 import { promisify } from "util";
 
