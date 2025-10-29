@@ -25,7 +25,7 @@ function ProgressDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent disableClose={percent < 100}>
         <DialogHeader>
           <DialogTitle>Aggiornamento in corso...</DialogTitle>
           <DialogDescription>
