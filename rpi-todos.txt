@@ -4,8 +4,8 @@
 4. Clone della repo su desktop
 5. Aumentare spazio di swap a 4GB
 6. Aumentare ram occupabile da node a 4GB
-7. Impostare npm config set fetch-retry-mintimeout 20000 e npm config set fetch-retry-maxtimeout 120000
-8. Installazione pacchetti npm
+7. Scaricare ultima release
+8. Scompattare e lanciare npm run start:all
 9. Job di lancio di chromium su localhost in modalità kiosk al boot del device
 
 Prossimi passi
@@ -13,4 +13,4 @@ Prossimi passi
 2. Eliminare processi inutili, mantenere processi utili se voglio collegarmi in USB in futuro
 3. Auto pairing bluetooth (possibilmente con MAC address)
 4. Auto pairing wifi iPhone (possibilmente con MAC address)
-5. Riportare spazio di swap a default o al minimo necessario
+5. Riportare spazio di swap a default o al minimo necessario, controllare con htop quando stiamo eseguendo chromium in modalità kiosk
