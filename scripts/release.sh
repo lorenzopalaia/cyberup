@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Create or update a GitHub release and upload the deploy tarball.
-# Requires GITHUB_TOKEN env var with repo write permissions.
-# Optional env vars:
-#  - GITHUB_REPOSITORY (owner/repo). If absent the script will try to infer from git remote.
-#  - TAG (release tag). Defaults to v<package.json version>.
-#  - ENV_FILE (path to .env). Defaults to project root .env.
+# GitHub-CLI-only release script
+# Requires: gh CLI installed and authenticated (or GITHUB_TOKEN exported)
 
 ROOT_DIR=$(pwd)
 TAR_NAME="deploy.tar.gz"
@@ -27,110 +23,46 @@ if [ ! -f "$TAR_PATH" ]; then
   exit 1
 fi
 
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  echo "[release] ERROR: GITHUB_TOKEN environment variable is not set. Create a token with repo scope and export it (or put GITHUB_TOKEN=... in $ENV_FILE)."
+if ! command -v gh >/dev/null 2>&1; then
+  echo "[release] ERROR: GitHub CLI 'gh' not found. Install it (e.g. 'brew install gh') and authenticate (gh auth login) or set GITHUB_TOKEN." >&2
   exit 1
 fi
 
-# determine repository
+# ensure authenticated or token provided
+if [ -z "${GITHUB_TOKEN:-}" ] && ! gh auth status >/dev/null 2>&1; then
+  echo "[release] ERROR: gh not authenticated and GITHUB_TOKEN not set. Run 'gh auth login' or export GITHUB_TOKEN with repo scope." >&2
+  exit 1
+fi
+
+# determine repository (owner/repo)
 REPO="${GITHUB_REPOSITORY:-}"
 if [ -z "$REPO" ]; then
   git_url=$(git config --get remote.origin.url || true)
   if [ -z "$git_url" ]; then
-    echo "[release] ERROR: cannot determine repository (no GITHUB_REPOSITORY and no git remote origin)"
+    echo "[release] ERROR: cannot determine repository (no GITHUB_REPOSITORY and no git remote origin)" >&2
     exit 1
   fi
-  # handle git@github.com:owner/repo.git and https://github.com/owner/repo.git
   if [[ "$git_url" =~ github.com[:/](.+) ]]; then
     REPO="${BASH_REMATCH[1]}"
     REPO=${REPO%.git}
   fi
 fi
 
-echo "[release] Repository: $REPO"
-
-# version/tag
 VERSION=$(node -e "console.log(require('./package.json').version)")
 TAG="${TAG:-v$VERSION}"
-echo "[release] Tag: $TAG"
 
-API_BASE="https://api.github.com/repos/$REPO"
-AUTH_HEADER=( -H "Authorization: token $GITHUB_TOKEN" )
-ACCEPT_JSON=( -H "Accept: application/vnd.github+json" )
+echo "[release] Using repo: $REPO" >&2
+echo "[release] Using tag: $TAG" >&2
 
-create_release() {
-  echo "[release] Creating release $TAG..."
-  resp=$(curl -s -X POST "${API_BASE}/releases" "${AUTH_HEADER[@]}" "${ACCEPT_JSON[@]}" -d "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"draft\":false,\"prerelease\":false}")
-  echo "$resp"
-}
-
-get_release_by_tag() {
-  curl -s "${API_BASE}/releases/tags/$TAG" "${AUTH_HEADER[@]}" "${ACCEPT_JSON[@]}"
-}
-
-# Try to create release. If it already exists, fetch it.
-create_resp=$(create_release || true)
-
-# determine if creation succeeded or release exists
-release_id=$(echo "$create_resp" | python3 - <<'PY'
-import sys, json
-try:
-    j=json.load(sys.stdin)
-    if 'id' in j:
-        print(j['id'])
-    else:
-        # creation failed, try to detect message
-        print('')
-except Exception:
-    print('')
-PY
-)
-
-if [ -z "$release_id" ]; then
-  echo "[release] Release creation returned no id; trying to fetch existing release by tag..."
-  get_resp=$(get_release_by_tag)
-  release_id=$(echo "$get_resp" | python3 - <<'PY'
-import sys, json
-try:
-    j=json.load(sys.stdin)
-    print(j.get('id',''))
-except Exception:
-    print('')
-PY
-)
-  if [ -z "$release_id" ]; then
-    echo "[release] ERROR: failed to create or fetch release. Response was:" >&2
-    echo "$create_resp" >&2
-    exit 1
-  fi
+# create or upload using gh
+if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+  echo "[release] Release $TAG exists; uploading asset with gh" >&2
+  gh release upload "$TAG" "$TAR_PATH" --repo "$REPO" --clobber
+  echo "[release] Done. Release $TAG updated with $TAR_NAME" >&2
+  exit 0
+else
+  echo "[release] Creating release $TAG with gh and uploading asset" >&2
+  gh release create "$TAG" "$TAR_PATH" --repo "$REPO" --title "$TAG" --notes ""
+  echo "[release] Done. Release $TAG created and asset uploaded" >&2
+  exit 0
 fi
-
-echo "[release] Using release id: $release_id"
-
-# delete existing asset with same name if present
-assets_resp=$(curl -s "${API_BASE}/releases/$release_id/assets" "${AUTH_HEADER[@]}" "${ACCEPT_JSON[@]}")
-asset_id=$(echo "$assets_resp" | python3 - <<PY
-import sys, json
-try:
-    arr=json.load(sys.stdin)
-    for a in arr:
-        if a.get('name','') == '$TAR_NAME':
-            print(a.get('id',''))
-            break
-except Exception:
-    pass
-PY
-)
-
-if [ -n "$asset_id" ]; then
-  echo "[release] Deleting existing asset id $asset_id with name $TAR_NAME"
-  curl -s -X DELETE "${API_BASE}/releases/assets/$asset_id" "${AUTH_HEADER[@]}"
-fi
-
-echo "[release] Uploading $TAR_NAME to release $TAG"
-UPLOAD_URL="https://uploads.github.com/repos/$REPO/releases/$release_id/assets?name=$(basename "$TAR_NAME")"
-curl -s -X POST "$UPLOAD_URL" "${AUTH_HEADER[@]}" -H "Content-Type: application/gzip" --data-binary @"$TAR_PATH" > /dev/null
-
-echo "[release] Done. Release $TAG updated with $TAR_NAME"
-
-exit 0
